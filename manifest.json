@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Kimini Lesson Report Generator",
+  "version": "1.0.1",
+  "description": "Quickly extract Kimini lesson details and generate standardized reports with one-click clipboard copy.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Kimini Lesson Report Generator"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "*://*.kimini.online/*",
+    "*://*.glats.online/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.kimini.online/*",
+        "*://*.glats.online/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

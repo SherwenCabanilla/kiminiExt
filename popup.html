@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kimini Lesson Report Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="brand">
+          <div class="logo-badge">K</div>
+          <div>
+            <h1 class="app-title">Kimini Report</h1>
+            <span class="status-indicator" id="statusBadge"
+              >Checking page...</span
+            >
+          </div>
+        </div>
+        <div class="header-actions">
+          <button
+            id="btnFeedback"
+            class="icon-btn"
+            title="Student Feedback"
+            aria-label="Student Feedback"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+          </button>
+          <button
+            id="btnSettings"
+            class="icon-btn"
+            title="Color Settings"
+            aria-label="Color Settings"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- ============ REPORT VIEW ============ -->
+      <div id="reportView">
+        <!-- Top Action Bar -->
+        <div class="action-bar">
+          <button
+            id="btnPullData"
+            class="btn btn-secondary action-btn"
+            title="Extract lesson details from active tab"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Pull from Page</span>
+          </button>
+          <button
+            id="btnReset"
+            class="btn btn-outline action-btn"
+            title="Clear inputs to defaults"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+              ></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="app-scroll">
+          <!-- Scraped / Editable Information Grid -->
+          <section class="form-section">
+            <div class="fields-grid">
+              <div class="field-group">
+                <label for="inputDate">Date</label>
+                <input type="text" id="inputDate" placeholder="2026-09-30" />
+              </div>
+              <div class="field-group">
+                <label for="inputTime">Time</label>
+                <input
+                  type="text"
+                  id="inputTime"
+                  placeholder="11:45-12:10  JST"
+                />
+              </div>
+              <div class="field-group">
+                <label for="selectClass">Class</label>
+                <select id="selectClass" class="custom-select">
+                  <option value="SP" selected>SP</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Custom">Custom...</option>
+                </select>
+                <input
+                  type="text"
+                  id="inputCustomClass"
+                  class="hidden"
+                  placeholder="Custom class name"
+                  style="margin-top: 4px"
+                />
+              </div>
+              <div class="field-group">
+                <label for="inputStudent">Student's name</label>
+                <input
+                  type="text"
+                  id="inputStudent"
+                  placeholder="Student name"
+                />
+              </div>
+              <div class="field-group">
+                <label for="inputTeacher">Teacher</label>
+                <input
+                  type="text"
+                  id="inputTeacher"
+                  placeholder="Teacher name"
+                />
+              </div>
+              <div class="field-group">
+                <label for="inputSchool">School (Name only)</label>
+                <input
+                  type="text"
+                  id="inputSchool"
+                  placeholder="e.g. Fujimigaoka"
+                />
+              </div>
+            </div>
+
+            <!-- Details Section with Dropdown & Add Button -->
+            <div class="details-section">
+              <div class="details-header">
+                <label for="selectIssue">Select Issue / Preset Detail:</label>
+                <button
+                  id="btnOpenAddPreset"
+                  class="text-link-btn"
+                  title="Add a custom note to the dropdown"
+                >
+                  + Add Custom Detail
+                </button>
+              </div>
+              <div class="dropdown-wrapper">
+                <select id="selectIssue" class="custom-select">
+                  <!-- Populated dynamically via JS -->
+                </select>
+              </div>
+              <details class="preset-manager">
+                <summary>Manage saved presets</summary>
+                <div id="presetManagerList" class="preset-manager-list"></div>
+              </details>
+
+              <div class="details-input-container">
+                <label for="inputDetails">Details (Editable):</label>
+                <textarea
+                  id="inputDetails"
+                  rows="2"
+                  placeholder="The student hasn't entered the KR yet....."
+                ></textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- Report Preview Area -->
+          <section class="preview-section">
+            <div class="preview-header">
+              <span class="preview-title">Output Preview</span>
+              <span class="preview-badge" id="previewLength">Ready</span>
+            </div>
+            <div class="preview-card">
+              <pre id="previewText"></pre>
+            </div>
+          </section>
+        </div>
+
+        <!-- Sticky Main Action Footer -->
+        <footer class="app-footer">
+          <button id="btnCopy" class="btn btn-primary btn-copy">
+            <svg
+              id="copyIcon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              ></path>
+            </svg>
+            <span id="copyBtnText">Copy to Clipboard</span>
+          </button>
+        </footer>
+      </div>
+      <!-- ============ END REPORT VIEW ============ -->
+
+      <!-- ============ FEEDBACK VIEW (hidden by default) ============ -->
+      <div id="feedbackView" class="feedback-view hidden">
+        <div class="action-bar">
+          <button
+            id="btnBackToReport"
+            class="btn btn-outline action-btn"
+            title="Back to Report"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Back to Report</span>
+          </button>
+        </div>
+
+        <div class="app-scroll">
+          <section class="form-section">
+            <h3 style="margin: 0 0 6px 0; font-size: 14px; color: #0284c7">
+              Student Feedback for AI
+            </h3>
+            <p style="margin: 0 0 10px 0; font-size: 11px; color: #64748b">
+              Select all that apply, then click <strong>Copy Feedback</strong>.
+              The student's nickname will be included automatically.
+            </p>
+
+            <div id="feedbackChecklist" class="feedback-checklist">
+              <label class="feedback-item"
+                ><input type="checkbox" value="Good pronunciation" /> Good
+                pronunciation</label
+              >
+              <label class="feedback-item"
+                ><input type="checkbox" value="Good reading" /> Good
+                reading</label
+              >
+              <label class="feedback-item"
+                ><input type="checkbox" value="Good answering questions" /> Good
+                answering questions</label
+              >
+              <label class="feedback-item"
+                ><input type="checkbox" value="Good answering exercises." /> Good answering
+                exercises.</label
+              >
+              <label class="feedback-item"
+                ><input
+                  type="checkbox"
+                  value="Good answering questions related to lesson"
+                />
+                Good answering questions related to lesson</label
+              >
+              <label class="feedback-item"
+                ><input
+                  type="checkbox"
+                  value="Appreciation for participating in the class"
+                />
+                Appreciation for participating in the class</label
+              >
+              <label class="feedback-item"
+                ><input
+                  type="checkbox"
+                  value="Appreciation for trying their best to answer"
+                />
+                Appreciation for trying their best to answer</label
+              >
+              <label class="feedback-item"
+                ><input type="checkbox" value="Did good on the mock exam" /> Did
+                good on the mock exam</label
+              >
+              <label class="feedback-item"
+                ><input type="checkbox" value="Some advice for improvement" />
+                Some advice for improvement</label
+              >
+            </div>
+
+            <div class="feedback-message">
+              <label for="newFeedbackItem"
+                >Add a selectable feedback option:</label
+              >
+              <textarea
+                id="newFeedbackItem"
+                rows="2"
+                placeholder="Write a feedback option to save..."
+              ></textarea>
+              <button
+                id="btnAddFeedbackItem"
+                class="btn btn-secondary"
+                type="button"
+              >
+                + Add to Feedback Options
+              </button>
+              <button
+                id="btnCancelFeedbackEdit"
+                class="btn btn-outline hidden"
+                type="button"
+              >
+                Cancel Edit
+              </button>
+            </div>
+
+            <!-- Feedback Preview -->
+            <div class="preview-section" style="margin-top: 10px">
+              <div class="preview-header">
+                <span class="preview-title">Feedback Preview</span>
+                <span class="preview-badge" id="feedbackCount">0 selected</span>
+              </div>
+              <div class="preview-card">
+                <pre id="feedbackPreview">Select feedback items above...</pre>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Feedback Footer -->
+        <footer class="app-footer">
+          <button id="btnCopyFeedback" class="btn btn-primary btn-copy">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              ></path>
+            </svg>
+            <span id="copyFeedbackBtnText">Copy Feedback</span>
+          </button>
+        </footer>
+      </div>
+      <!-- ============ END FEEDBACK VIEW ============ -->
+
+      <!-- Toast Notification Banner -->
+      <div id="toast" class="toast hidden">Copied to clipboard!</div>
+
+      <!-- Quick Modal: Add Custom Detail Preset -->
+      <div id="modalAddPreset" class="modal-overlay hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 id="presetModalTitle">Add Custom Detail Preset</h3>
+            <button id="btnCloseAddPreset" class="icon-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <label for="newPresetText">Enter your custom note / issue:</label>
+            <textarea
+              id="newPresetText"
+              rows="3"
+              placeholder="e.g. Student experienced network lag during the discussion."
+            ></textarea>
+            <p class="modal-hint">
+              This preset will be saved in your dropdown permanently for fast
+              1-click access.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button id="btnCancelAddPreset" class="btn btn-outline">
+              Cancel
+            </button>
+            <button id="btnSavePreset" class="btn btn-primary">
+              Save & Select
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Settings Drawer / Modal -->
+      <div id="settingsDrawer" class="drawer-overlay hidden">
+        <div class="drawer-card">
+          <div class="drawer-header">
+            <h2>Color Settings</h2>
+            <button id="btnCloseSettings" class="icon-close">&times;</button>
+          </div>
+          <div class="drawer-content">
+            <div class="setting-group">
+              <label for="settingThemeColor">Custom Color</label>
+              <input type="color" id="settingThemeColor" value="#0284c7" />
+              <span class="setting-desc"
+                >Choose the main color for buttons, links, and highlights.</span
+              >
+            </div>
+
+            <div class="setting-group">
+              <label>Select Color</label>
+              <div id="colorSwatches" class="color-swatches">
+                <button
+                  type="button"
+                  class="color-swatch"
+                  data-color="#0284c7"
+                  style="background: #0284c7"
+                  title="Sky blue"
+                ></button>
+                <button
+                  type="button"
+                  class="color-swatch"
+                  data-color="#059669"
+                  style="background: #059669"
+                  title="Green"
+                ></button>
+                <button
+                  type="button"
+                  class="color-swatch"
+                  data-color="#7c3aed"
+                  style="background: #7c3aed"
+                  title="Violet"
+                ></button>
+                <button
+                  type="button"
+                  class="color-swatch"
+                  data-color="#dc2626"
+                  style="background: #dc2626"
+                  title="Red"
+                ></button>
+                <button
+                  type="button"
+                  class="color-swatch"
+                  data-color="#ea580c"
+                  style="background: #ea580c"
+                  title="Orange"
+                ></button>
+                <button
+                  type="button"
+                  class="color-swatch"
+                  data-color="#334155"
+                  style="background: #334155"
+                  title="Slate"
+                ></button>
+              </div>
+            </div>
+          </div>
+          <div class="drawer-footer">
+            <button id="btnSaveSettings" class="btn btn-primary btn-full">
+              Save Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

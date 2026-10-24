@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Kimini Online English - Lesson Schedule & Room (Demo)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", sans-serif;
+      background: #f0f4f8;
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 24px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    h1 {
+      font-size: 20px;
+      color: #0284c7;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #e0f2fe;
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tag.site {
+      display: inline-block;
+      background: #94a3b8;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 13.5px;
+    }
+    th {
+      width: 28%;
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+    }
+    td {
+      font-weight: 500;
+      color: #0f172a;
+    }
+    .line {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .bold.plain {
+      font-weight: bold;
+      color: #0284c7;
+      text-decoration: none;
+    }
+    .scenario-toggle {
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .scenario-toggle label {
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .note {
+      font-size: 12.5px;
+      color: #475569;
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 6px;
+      line-height: 1.6;
+      border-left: 4px solid #0284c7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      <span>Kimini Online Lesson Room (Live Test)</span>
+      <!-- Actual Kimini School Tag Element -->
+      <div id="siteBadge" class="tag site top-2px ml2">kinjo</div>
+    </h1>
+
+    <!-- Interactive Toggle to switch scenarios -->
+    <div class="scenario-toggle">
+      <span style="font-weight: bold; font-size: 13px;">Test Scenario:</span>
+      <label>
+        <input type="radio" name="scenario" value="school_course" checked onchange="switchScenario('school_course')">
+        Scenario 1: Course has School (Kinjo/2026/Jr1)
+      </label>
+      <label>
+        <input type="radio" name="scenario" value="generic_course" onchange="switchScenario('generic_course')">
+        Scenario 2: Generic Course (Eiken Grade 3) + kbghs tag
+      </label>
+    </div>
+    
+    <table>
+      <tbody>
+        <tr>
+          <th>Date</th>
+          <td id="cellDate">2026-09-30</td>
+        </tr>
+        <tr>
+          <th>Time</th>
+          <td id="cellTime">11:45-12:10 JST</td>
+        </tr>
+        <tr>
+          <th>Student</th>
+          <td id="cellStudent">
+            <a href="/student/302098828" class="bold plain">test name for studnet</a>
+            <span style="color: #94a3b8; font-size: 12px; margin-left: 6px;">(テスト名前)</span>
+          </td>
+        </tr>
+        <tr>
+          <th>Teacher</th>
+          <td id="cellTeacher">
+            <a href="/teacher/314784551" class="bold plain">Thunder</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Course</th>
+          <td id="cellCourse">
+            <dd style="margin: 0;">
+              <div class="line"><a href="/original_course/Kinjo-2026-Jr1" target="_blank" class="bold plain">Kinjo/2026/Jr1</a></div>
+              <div class="line ml4 mr4">&nbsp;▶&nbsp;</div>
+              <div class="line">Lesson 2</div>
+              <div class="line ml4 mr4">&nbsp;▶&nbsp;</div>
+              <div class="line">School</div>
+              <div class="line orange ml10" style="color: #ea580c; margin-left: 8px;">(student fixed)</div>
+            </dd>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>How to test:</strong><br>
+      1. Click the <strong>Kimini Report</strong> extension icon on this tab.<br>
+      2. Click <strong>Pull from Page</strong>.<br>
+      3. In <strong>Scenario 1</strong>: The badge is <code>kinjo</code> and the Course is <code>Kinjo/2026/Jr1</code> $\rightarrow$ <strong>School</strong> copies as <strong>Kinjo/2026/Jr1</strong>.<br>
+      4. Switch to <strong>Scenario 2</strong> above and click <strong>Pull from Page</strong> again $\rightarrow$ The Course is <code>Eiken Grade 3</code>, so <strong>School</strong> extracts from the badge as <strong>kbghs</strong>!
+    </div>
+  </div>
+
+  <script>
+    function switchScenario(type) {
+      const cell = document.getElementById('cellCourse');
+      const badge = document.getElementById('siteBadge');
+      if (type === 'school_course') {
+        badge.textContent = 'kinjo';
+        cell.innerHTML = `
+          <dd style="margin: 0;">
+            <div class="line"><a href="/original_course/Kinjo-2026-Jr1" target="_blank" class="bold plain">Kinjo/2026/Jr1</a></div>
+            <div class="line ml4 mr4">&nbsp;▶&nbsp;</div>
+            <div class="line">Lesson 2</div>
+            <div class="line ml4 mr4">&nbsp;▶&nbsp;</div>
+            <div class="line">School</div>
+          </dd>`;
+      } else {
+        badge.textContent = 'kbghs';
+        cell.innerHTML = `
+          <dd style="margin: 0;">
+            <div class="line"><span class="bold plain">Eiken Grade 3</span></div>
+            <div class="line ml4 mr4">&nbsp;▶&nbsp;</div>
+            <div class="line">Practice 2</div>
+            <div class="line ml4 mr4">&nbsp;▶&nbsp;</div>
+            <div class="line">Mock Exam (2)</div>
+          </dd>`;
+      }
+    }
+  </script>
+</body>
+</html>
