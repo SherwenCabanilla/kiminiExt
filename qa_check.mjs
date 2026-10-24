@@ -15,7 +15,8 @@ export default async function run(page, ui) {
     };
   });
 
-  await page.goto("file:///d:/Apps/autocopy/popup.html");
+  await page.setViewportSize({ width: 440, height: 590 });
+  await page.goto(new URL("./popup.html", import.meta.url).href);
   await page.waitForTimeout(400);
 
   const results = {};

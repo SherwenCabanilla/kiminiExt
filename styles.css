@@ -67,6 +67,13 @@ body {
   position: relative;
 }
 
+#reportView {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 /* Scrollable middle area keeps the copy button permanently visible below */
 .app-scroll {
   flex: 1;
