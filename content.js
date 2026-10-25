@@ -33,6 +33,7 @@
       time: '',
       classType: '',
       studentName: '',
+      feedbackNickname: '',
       teacherName: '',
       schoolName: '',
       url: window.location.href,
@@ -69,6 +70,18 @@
       }
     }
 
+    const feedbackNickname = document.querySelector(
+      '.gvt-slidenavi__student-text[data-id="nickname"]'
+    ) || (!isDashboardPage()
+      ? document.querySelector('a[href*="/student/"], a[href^="/student/"]')
+      : null);
+    if (feedbackNickname) {
+      result.feedbackNickname = cleanValue(feedbackNickname.textContent);
+      if (!result.matchedDashboardStudent) {
+        result.studentName = result.feedbackNickname;
+      }
+    }
+
     // Strategy 5: Normalize and format dates/times
     normalizeResults(result);
 
@@ -81,7 +94,9 @@
   }
 
   function isDashboardPage() {
-    return window.location.href.toLowerCase().includes('dashboard');
+    const url = window.location.href;
+    return /(?:^|\/\/)teacher\.glats\.online\/?(?:[?#]|$)/i.test(url) ||
+      /dashboard/i.test(url);
   }
 
   function findDashboardStudentForLesson(lessonMatch, dashboardDate) {
@@ -92,25 +107,23 @@
     const pageDate = getDateKey(dashboardDate || '');
     const matchingNames = new Set();
 
-    document.querySelectorAll('a[href*="/student/"], a[href^="/student/"]').forEach((link) => {
-      let ancestor = link.parentElement;
-      for (let depth = 0; ancestor && depth < 7; depth++, ancestor = ancestor.parentElement) {
-        const studentLinks = ancestor.querySelectorAll('a[href*="/student/"], a[href^="/student/"]');
-        if (studentLinks.length !== 1) continue;
+    document.querySelectorAll('tr').forEach((row) => {
+      const contextText = cleanValue(row.innerText || row.textContent);
+      const contextTime = getTimeKey(contextText);
+      if (!contextTime || contextTime.start !== targetTime.start) return;
+      if (targetTime.end && contextTime.end !== targetTime.end) return;
 
-        const contextText = cleanValue(ancestor.innerText || ancestor.textContent);
-        const contextTime = getTimeKey(contextText);
-        if (!contextTime || contextTime.start !== targetTime.start) continue;
-        if (targetTime.end && contextTime.end && contextTime.end !== targetTime.end) continue;
+      const contextDate = getDateKey(contextText);
+      const displayedDate = contextDate || pageDate;
+      if (targetDate && targetDate !== displayedDate) return;
 
-        const contextDate = getDateKey(contextText);
-        const displayedDate = contextDate || pageDate;
-        if (targetDate && targetDate !== displayedDate) continue;
-
-        const name = extractEnglishNameOnly(cleanValue(link.textContent));
-        if (name) matchingNames.add(name);
-        break;
-      }
+      const nameElement = row.querySelector(
+        '.caption > span.bold.plain, a[href*="/student/"], a[href^="/student/"]'
+      );
+      const name = nameElement
+        ? extractEnglishNameOnly(cleanValue(nameElement.textContent))
+        : '';
+      if (name) matchingNames.add(name);
     });
 
     return matchingNames.size === 1 ? matchingNames.values().next().value : '';
@@ -145,7 +158,7 @@
     if (studentLink) {
       // Use full name on dashboard pages; otherwise extract English‑only name.
       const rawName = cleanValue(studentLink.textContent);
-      if (window.location.href.toLowerCase().includes('dashboard')) {
+      if (isDashboardPage()) {
         result.studentName = rawName; // keep full name
       } else {
         result.studentName = extractEnglishNameOnly(rawName);
@@ -554,6 +567,7 @@
       time: '',
       classType: '',
       studentName: '',
+      feedbackNickname: '',
       teacherName: '',
       schoolName: '',
       url: window.location.href,

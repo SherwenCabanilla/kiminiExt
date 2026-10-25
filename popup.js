@@ -34,6 +34,7 @@ let appSettings = {
 let editingFeedbackIndex = null;
 let editingBuiltinFeedback = null;
 let editingPreset = null;
+let feedbackStudentNickname = '';
 
 // DOM Elements
 const elements = {
@@ -265,9 +266,10 @@ function setupEventListeners() {
 
   // ===== Feedback View =====
   // Toggle to Feedback View
-  on(elements.btnFeedback, 'click', () => {
+  on(elements.btnFeedback, 'click', async () => {
     elements.reportView.classList.add('hidden');
     elements.feedbackView.classList.remove('hidden');
+    await refreshFeedbackNicknameFromOpenTabs();
     updateFeedbackPreview();
   });
 
@@ -519,7 +521,32 @@ function isKiminiOrGlatsPage(url = '') {
 }
 
 function isDashboardPage(url = '') {
-  return isKiminiOrGlatsPage(url) && /dashboard/i.test(url);
+  return /(?:^|\/\/)teacher\.glats\.online\/?(?:[?#]|$)/i.test(url) ||
+    (isKiminiOrGlatsPage(url) && /dashboard/i.test(url));
+}
+
+async function refreshFeedbackNicknameFromOpenTabs() {
+  feedbackStudentNickname = '';
+
+  try {
+    const tabs = await chrome.tabs.query({});
+    const lessonTabs = tabs.filter((tab) =>
+      tab.id && isKiminiOrGlatsPage(tab.url) && !isDashboardPage(tab.url)
+    );
+
+    for (const tab of lessonTabs) {
+      const data = await requestTabExtraction(tab);
+      if (data && typeof data.feedbackNickname === 'string' && data.feedbackNickname.trim()) {
+        feedbackStudentNickname = data.feedbackNickname.trim();
+        return;
+      }
+    }
+
+    showToast('Could not find a student nickname in the open lesson tabs');
+  } catch (err) {
+    console.warn('Could not read the student nickname from open lesson tabs:', err);
+    showToast('Could not read the student nickname from the lesson tab');
+  }
 }
 
 function requestTabExtraction(tab, lessonMatch = null) {
@@ -564,6 +591,10 @@ function requestTabExtraction(tab, lessonMatch = null) {
  */
 function applyExtractedData(data, isKiminiPage, isManualClick) {
   let fieldsUpdated = 0;
+
+  if (typeof data.feedbackNickname === 'string') {
+    feedbackStudentNickname = data.feedbackNickname;
+  }
 
   if (data.date) {
     elements.inputDate.value = data.date;
@@ -998,7 +1029,7 @@ async function copyFeedbackToClipboard() {
 
 function buildFeedbackText(checked) {
   if (checked.length === 0) return '';
-  const nickname = extractEnglishNameOnly(elements.inputStudent.value || '');
+  const nickname = extractEnglishNameOnly(feedbackStudentNickname);
   const nameLabel = nickname || '[Student Name]';
   const bulletList = checked.map(item => `- ${item}`).join('\n');
   return `Student: ${nameLabel}\n\nFeedback:\n${bulletList}`;
