@@ -811,10 +811,6 @@ input[type="color"] {
   user-select: none;
 }
 
-.custom-feedback-item {
-  cursor: default;
-}
-
 .custom-feedback-text {
   flex: 1;
   min-width: 0;

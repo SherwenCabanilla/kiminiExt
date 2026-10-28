@@ -62,12 +62,21 @@
       extractFromPageTextRegex(result);
     }
 
+    // On the lesson details page, the School row is the reliable class marker:
+    // present means SP; absent means Regular.
+    if (/\/lesson\//i.test(window.location.pathname)) {
+      result.classType = hasVisibleSchoolSection() ? 'SP' : 'Regular';
+    }
+
     if (lessonMatch && isDashboardPage()) {
       const dashboardStudent = findDashboardStudentForLesson(lessonMatch, result.date);
       if (dashboardStudent) {
         result.studentName = dashboardStudent;
         result.matchedDashboardStudent = true;
       }
+
+      const scheduledClassType = findDashboardClassTypeForLesson(lessonMatch);
+      if (scheduledClassType) result.classType = scheduledClassType;
     }
 
     const feedbackNickname = document.querySelector(
@@ -80,6 +89,15 @@
       if (!result.matchedDashboardStudent) {
         result.studentName = result.feedbackNickname;
       }
+    }
+
+    // Lesson pages also show the colour-coded schedule beside the lesson
+    // details, so use it directly when it is available.
+    const visibleScheduleClassType = findDashboardClassTypeForLesson({
+      studentName: result.studentName
+    });
+    if (visibleScheduleClassType && !/\/lesson\//i.test(window.location.pathname)) {
+      result.classType = visibleScheduleClassType;
     }
 
     // Strategy 5: Normalize and format dates/times
@@ -97,6 +115,13 @@
     const url = window.location.href;
     return /(?:^|\/\/)teacher\.glats\.online\/?(?:[?#]|$)/i.test(url) ||
       /dashboard/i.test(url);
+  }
+
+  function hasVisibleSchoolSection() {
+    // SP lesson details have this exact field; Regular lesson details omit it.
+    return Array.from(document.querySelectorAll('dl.form-field.border-top > dt.vm')).some((label) =>
+      cleanValue(label.textContent).toLowerCase() === 'school'
+    );
   }
 
   function findDashboardStudentForLesson(lessonMatch, dashboardDate) {
@@ -127,6 +152,42 @@
     });
 
     return matchingNames.size === 1 ? matchingNames.values().next().value : '';
+  }
+
+  /**
+   * Kimini's schedule uses green lesson tiles for Regular and yellow tiles for
+   * SP. Find the active lesson's student in the schedule, then inspect the
+   * tile (or a nearby container) for its rendered background colour.
+   */
+  function findDashboardClassTypeForLesson(lessonMatch) {
+    const studentName = cleanValue(lessonMatch.studentName || '');
+    if (!studentName) return '';
+
+    const candidates = Array.from(document.querySelectorAll('body *')).filter((element) => {
+      const text = cleanValue(element.innerText || element.textContent);
+      return text === studentName || text.includes(studentName);
+    });
+
+    for (const candidate of candidates) {
+      let element = candidate;
+      for (let depth = 0; element && depth < 6; depth += 1, element = element.parentElement) {
+        const classType = classTypeFromColor(getComputedStyle(element).backgroundColor);
+        if (classType) return classType;
+      }
+    }
+    return '';
+  }
+
+  function classTypeFromColor(color) {
+    const match = (color || '').match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (!match) return '';
+
+    const red = Number(match[1]);
+    const green = Number(match[2]);
+    const blue = Number(match[3]);
+    if (red >= 130 && green >= 100 && blue <= 110 && red > blue * 1.35) return 'SP';
+    if (green >= 90 && green > red * 1.15 && green > blue * 1.15) return 'Regular';
+    return '';
   }
 
   function getTimeKey(text) {
@@ -220,10 +281,13 @@
       result.schoolName = siteTagText;
     }
 
-    // 4. Class detection from course: default is SP, unless explicitly Regular
-    if (courseText && /regular|通常|標準/i.test(courseText)) {
+    // A JP school tag identifies a Regular student. This is more reliable than
+    // inferring the class from the schedule tile colour.
+    if (siteTagText.trim().toUpperCase() === 'JP') {
       result.classType = 'Regular';
-    } else {
+    } else if (courseText && /regular|通常|標準/i.test(courseText)) {
+      result.classType = 'Regular';
+    } else if (courseText && /\bSP\b/i.test(courseText)) {
       result.classType = 'SP';
     }
   }
@@ -523,11 +587,13 @@
       result.schoolName = cleanValue(result.schoolName);
     }
 
-    // Normalize Class: Default is SP, unless explicitly Regular
+    // Normalize only a class that was positively identified.
     if (result.classType && /regular|通常|標準/i.test(result.classType)) {
       result.classType = 'Regular';
-    } else {
+    } else if (/\bSP\b/i.test(result.classType)) {
       result.classType = 'SP';
+    } else {
+      result.classType = '';
     }
   }
 

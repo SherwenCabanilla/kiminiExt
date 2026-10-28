@@ -500,10 +500,12 @@ async function pullDataFromActiveTab(isManualClick = false) {
       for (const dashboardTab of dashboardTabs) {
         const dashboardData = await requestTabExtraction(dashboardTab, {
           date: activeData.date,
-          time: activeData.time
+          time: activeData.time,
+          studentName: activeData.studentName
         });
         if (dashboardData && dashboardData.matchedDashboardStudent && dashboardData.studentName) {
           activeData.studentName = dashboardData.studentName;
+          if (dashboardData.classType) activeData.classType = dashboardData.classType;
           break;
         }
       }
@@ -529,23 +531,25 @@ async function refreshFeedbackNicknameFromOpenTabs() {
   feedbackStudentNickname = '';
 
   try {
-    const tabs = await chrome.tabs.query({});
-    const lessonTabs = tabs.filter((tab) =>
-      tab.id && isKiminiOrGlatsPage(tab.url) && !isDashboardPage(tab.url)
-    );
-
-    for (const tab of lessonTabs) {
-      const data = await requestTabExtraction(tab);
-      if (data && typeof data.feedbackNickname === 'string' && data.feedbackNickname.trim()) {
-        feedbackStudentNickname = data.feedbackNickname.trim();
-        return;
-      }
+    // The feedback belongs to the page currently open behind the popup. Do
+    // not scan every lesson tab: their order is not meaningful and can select
+    // a different student's name.
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!activeTab?.id || !isKiminiOrGlatsPage(activeTab.url) || isDashboardPage(activeTab.url)) {
+      showToast('Open the student lesson tab before creating feedback');
+      return;
     }
 
-    showToast('Could not find a student nickname in the open lesson tabs');
+    const data = await requestTabExtraction(activeTab);
+    if (data && typeof data.feedbackNickname === 'string' && data.feedbackNickname.trim()) {
+      feedbackStudentNickname = data.feedbackNickname.trim();
+      return;
+    }
+
+    showToast('Could not find a student nickname in the active lesson tab');
   } catch (err) {
-    console.warn('Could not read the student nickname from open lesson tabs:', err);
-    showToast('Could not read the student nickname from the lesson tab');
+    console.warn('Could not read the student nickname from the active lesson tab:', err);
+    showToast('Could not read the student nickname from the active lesson tab');
   }
 }
 
@@ -607,7 +611,8 @@ function applyExtractedData(data, isKiminiPage, isManualClick) {
   if (data.classType) {
     const rawClass = data.classType.trim();
     if (/regular|通常|標準/i.test(rawClass)) {
-      elements.selectClass.value = 'Regular';
+      // Automatic classification is disabled: all extracted lessons start as SP.
+      elements.selectClass.value = 'SP';
     } else {
       elements.selectClass.value = 'SP';
     }
@@ -618,6 +623,11 @@ function applyExtractedData(data, isKiminiPage, isManualClick) {
     elements.inputCustomClass.classList.add('hidden');
   }
   toggleSchoolFieldVisibility();
+  const isRegularClass = elements.selectClass.value === 'Regular';
+  if (isRegularClass) {
+    // Regular reports do not use a school name, including a JP source tag.
+    elements.inputSchool.value = '';
+  }
   if (data.studentName) {
     elements.inputStudent.value = extractEnglishNameOnly(data.studentName);
     fieldsUpdated++;
@@ -626,7 +636,7 @@ function applyExtractedData(data, isKiminiPage, isManualClick) {
     elements.inputTeacher.value = data.teacherName;
     fieldsUpdated++;
   }
-  if (data.schoolName) {
+  if (data.schoolName && !isRegularClass) {
     elements.inputSchool.value = cleanSchoolOrCourseValue(data.schoolName);
     fieldsUpdated++;
   }
@@ -1039,7 +1049,10 @@ function renderCustomFeedbackItems(checkedItems = new Set(getCheckedFeedbackItem
   elements.feedbackChecklist.querySelectorAll('[data-custom-feedback]').forEach((item) => item.remove());
 
   appSettings.customFeedbackItems.forEach((value, index) => {
-    const row = document.createElement('div');
+    // A label makes the complete row a checkbox hit area, not only the small
+    // checkbox itself. The delegated action handler prevents edit/delete
+    // buttons from activating this label.
+    const row = document.createElement('label');
     row.className = 'feedback-item custom-feedback-item';
     row.dataset.customFeedback = 'true';
 
